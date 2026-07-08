@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds / artifacts
+.next/
+out/
+dist/
+build/
+target/
+*.tsbuildinfo
+.turbo/
+.vercel/
+
+# Secrets — NEVER commit
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+.keys/
+.wallets/
+*.pem
+deals.json
+
+# Media (kept out of git to stay lean)
+*.mp4
+
+# Logs / OS
+*.log
+npm-debug.log*
+.DS_Store
+coverage/

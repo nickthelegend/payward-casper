@@ -1,0 +1,31 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Start here",
+      "description": "What Fund402 is and how an agent should use these skills.",
+      "skills": ["fund402-overview"]
+    },
+    {
+      "title": "Agent (pay & repay)",
+      "description": "Let an autonomous agent pay x402-gated endpoints with just-in-time credit from the Fund402 lending pool, and repay its loans.",
+      "skills": ["fund402-pay-x402", "fund402-repay-loan"]
+    },
+    {
+      "title": "Liquidity (LP)",
+      "description": "Provide liquidity to the pool and earn yield from the JIT credit fee.",
+      "skills": ["fund402-provide-liquidity"]
+    },
+    {
+      "title": "Merchant & operator",
+      "description": "Create x402 endpoints settled by the pool, and manage agent wallets / liquidity / reputation.",
+      "skills": ["fund402-create-paywall", "fund402-manage-wallet"]
+    },
+    {
+      "title": "Clawback (escrow + disputes)",
+      "description": "A separate settlement layer: agent payment escrow with AI-adjudicated disputes (chargebacks for the machine economy).",
+      "skills": ["clawback-overview", "clawback-escrow-buy"]
+    }
+  ]
+}

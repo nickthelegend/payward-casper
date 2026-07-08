@@ -1,0 +1,22 @@
+{
+  "name": "clawback-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clawback agent toolkit on Casper — escrow purchase, AI-adjudicated disputes, release/refund",
+  "main": "./src/index.mjs",
+  "exports": { ".": "./src/index.mjs", "./package.json": "./package.json" },
+  "bin": { "clawback-agent": "./src/cli.mjs" },
+  "scripts": {
+    "deploy": "node src/deploy.mjs",
+    "seller": "node src/seller.mjs",
+    "demo": "node src/demo.mjs",
+    "tool": "node src/cli.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.4.0",
+    "casper-js-sdk": "^5.0.12"
+  },
+  "license": "MIT"
+}

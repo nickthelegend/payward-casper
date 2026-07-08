@@ -1,0 +1,11 @@
+{
+  "name": "fund402-agent-skills",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Installable Agent Skills for Fund402 on Casper",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "MIT"
+}

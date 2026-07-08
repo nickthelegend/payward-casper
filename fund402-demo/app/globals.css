@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { color-scheme: dark; }
+html, body { height: 100%; }
+body {
+  background:
+    radial-gradient(900px 500px at 15% -10%, #10243a 0%, transparent 55%),
+    radial-gradient(900px 500px at 90% 10%, #1a1030 0%, transparent 55%),
+    #06070d;
+  color: #e6e9ef;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@keyframes dash { to { stroke-dashoffset: -16; } }
+.wire { stroke-dasharray: 6 10; animation: dash 0.8s linear infinite; }
+@keyframes pop { 0% { transform: scale(.85); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
+.pop { animation: pop .25s ease-out both; }

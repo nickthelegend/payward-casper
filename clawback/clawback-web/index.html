@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clawback — Agent payment escrow on Casper</title>
+<style>
+  :root{
+    --bg:#f3f4f6; --card:#fff; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --green:#0f766e; --greenbg:#ecfdf5; --amber:#b45309; --amberbg:#fffbeb;
+    --red:#b91c1c; --redbg:#fef2f2; --blue:#2563eb; --gold:#b8860b;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:22px}
+  .wrap{max-width:1560px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .pad{padding:20px 22px}
+  .muted{color:var(--muted)} .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  /* header */
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:48px;height:48px;border-radius:12px;background:#f1e9d2;display:flex;align-items:center;justify-content:center;font-size:24px;border:1px solid #e7dcc0}
+  .brand h1{font-size:24px;margin:0;letter-spacing:-.02em}
+  .brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+  .btns{display:flex;gap:10px}
+  button{font:600 14px/1 inherit;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  button:hover{background:#fafafa}
+  .honest{background:#0f172a;color:#fff;border-color:#0f172a}
+  .bad{background:#fff;color:var(--red);border-color:#f3c9c9}
+  .icon-btn{padding:11px 12px}
+  /* grid */
+  .grid{display:grid;grid-template-columns:1fr 1.7fr 1fr;gap:20px;align-items:start}
+  /* agent cards */
+  .agent .hd{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:16px}
+  .agent .av{width:42px;height:42px;border-radius:11px;background:var(--greenbg);display:flex;align-items:center;justify-content:center;color:var(--green)}
+  .agent .nm{font-weight:600;font-size:18px} .agent .sub{color:var(--muted);font-size:13px}
+  .lbl{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .score{font-size:54px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:2px 0 14px;transition:color .3s}
+  .kv{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:12px}
+  .kv .v{font-weight:700;font-size:16px;margin-top:2px}
+  .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-weight:600;font-size:12px;border:1px solid var(--line)}
+  .badge.trust{color:var(--green);background:var(--greenbg);border-color:#bbf7e6}
+  /* escrow lane */
+  .lane-id{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .pills{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .pill{border:1px solid var(--line);border-radius:10px;padding:11px 12px;display:flex;align-items:center;gap:9px;font-weight:600;color:#94a3b8;font-size:14px}
+  .pill .dot{width:9px;height:9px;border-radius:50%;background:#d1d5db}
+  .pill.on{color:var(--ink)} .pill.on .dot{background:var(--green)}
+  .pill.warn.on .dot{background:var(--amber)} .pill.bad.on .dot{background:var(--red)}
+  .visual{position:relative;height:150px;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+    background:repeating-linear-gradient(135deg,#eef2f7 0 14px,#f7f9fc 14px 28px)}
+  .visual .road{position:absolute;left:9%;right:9%;top:50%;height:3px;background:#cbd5e1;transform:translateY(-50%)}
+  .visual .fill{position:absolute;left:9%;top:50%;height:3px;background:var(--green);transform:translateY(-50%);width:0;transition:width .5s}
+  .visual .node{position:absolute;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:#fff;border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+  .n1{left:9%;color:var(--green)} .n2{left:50%;color:var(--gold);font-size:26px} .n3{left:91%;color:var(--green)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .stat{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .stat .v{font-weight:700;font-size:16px;margin-top:3px}
+  .stat .v.pend{color:var(--amber)} .stat .v.ok{color:var(--green)} .stat .v.refund{color:var(--red)}
+  /* firehose */
+  .fire{border:1px solid var(--line);border-radius:12px;margin-top:16px;overflow:hidden}
+  .fire .fh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);font-weight:600}
+  .row{display:grid;grid-template-columns:1.4fr 1fr 1.4fr;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:13px}
+  .row:last-child{border-bottom:0}
+  .row .h{font-weight:700;color:var(--blue);font-family:ui-monospace,Menlo,monospace}
+  .row .s{font-weight:700;font-family:ui-monospace,Menlo,monospace}
+  .row.held{background:var(--amberbg)} .row.held .s{color:var(--amber)}
+  .row.disputed{background:var(--redbg)} .row.disputed .s{color:var(--red)}
+  .row.released,.row.refunded{background:var(--greenbg)} .row.released .s,.row.refunded .s{color:var(--green)}
+  .row .sub{color:var(--muted);font-size:12px}
+  .events{border:1px solid var(--line);border-radius:12px;margin-top:16px;overflow:hidden}
+  .ev{display:flex;gap:18px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .ev:last-child{border-bottom:0}
+  .ev .e{font-weight:700;color:var(--blue);font-family:ui-monospace,Menlo,monospace;min-width:150px}
+  .ev.rel{background:var(--greenbg)} .ev.ref{background:var(--greenbg)} .ev.dis{background:var(--redbg)}
+  .hint{color:var(--muted);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="logo">⚖️</div>
+      <div><h1>Clawback</h1><p>Agent payment escrow on <b>Casper</b> — AI-adjudicated disputes</p></div>
+    </div>
+    <div class="btns">
+      <button class="honest" onclick="run('honest')">▶ Honest</button>
+      <button class="bad" onclick="run('bad')">⚠ Bad</button>
+      <button class="icon-btn" onclick="reset()">↺</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- buyer -->
+    <div class="card pad agent">
+      <div class="hd"><div class="av">🛡️</div><div><div class="nm">Buyer agent</div><div class="sub mono">buyer-principal.cspr</div></div></div>
+      <div class="lbl">score</div><div class="score" id="buyerScore">1000</div>
+      <div class="kv"><div class="lbl">volume</div><div class="v mono" id="buyerVol">13000000</div></div>
+      <div class="kv"><div class="lbl">badge</div><div class="v"><span class="badge trust">trusted</span></div></div>
+    </div>
+
+    <!-- escrow lane -->
+    <div class="card pad">
+      <div class="lane-id">
+        <div><div style="font-size:18px;font-weight:600">Escrow lane</div><div class="mono muted" id="dealId" style="font-size:13px">0x4d7ffb…02dff3</div></div>
+        <span class="badge" id="statusBadge">held</span>
+      </div>
+      <div class="pills">
+        <div class="pill" id="pHeld"><span class="dot"></span>Held</div>
+        <div class="pill" id="pDelivered"><span class="dot"></span>Delivered</div>
+        <div class="pill warn" id="pDisputed"><span class="dot"></span>Disputed</div>
+        <div class="pill" id="pResolved"><span class="dot"></span>Resolved</div>
+      </div>
+      <div class="visual">
+        <div class="road"></div><div class="fill" id="fill"></div>
+        <div class="node n1">🛡️</div><div class="node n2">＄</div><div class="node n3">✅</div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="lbl">verdict</div><div class="v pend" id="verdict">pending</div></div>
+        <div class="stat"><div class="lbl">response hash</div><div class="v mono" id="respHash" style="font-size:14px">0xe256ae…35add0</div></div>
+        <div class="stat"><div class="lbl">amount (F402)</div><div class="v mono" id="amount">1000000</div></div>
+      </div>
+
+      <div class="fire">
+        <div class="fh"><span>Transaction firehose</span><span class="muted" id="fhCount">0 tracked</span></div>
+        <div id="fireRows"></div>
+      </div>
+      <div class="events" id="events"></div>
+      <div class="hint" id="hint">Press <b>Honest</b> (good delivery → release) or <b>Bad</b> (junk → dispute → AI refund). Mirrors the live on-chain ClawbackEscrow.</div>
+      <div class="hint" style="margin-top:6px">ClawbackEscrow <a class="mono" href="https://testnet.cspr.live/contract-package/088655d1c0b612cf90d14d43d9fabc390e2c833189d966fcbfb195cc5888efb9" target="_blank" rel="noopener" style="color:inherit">088655d1…5888efb9 ↗</a> · settled in F402 · AI verifier = Groq attester</div>
+    </div>
+
+    <!-- seller -->
+    <div class="card pad agent">
+      <div class="hd"><div class="av" style="background:#ecfdf5;color:#0f766e">🔮</div><div><div class="nm">Seller agent</div><div class="sub mono">data-oracle.cspr</div></div></div>
+      <div class="lbl">score</div><div class="score" id="sellerScore">1000</div>
+      <div class="kv"><div class="lbl">volume</div><div class="v mono" id="sellerVol">13000000</div></div>
+      <div class="kv"><div class="lbl">badge</div><div class="v"><span class="badge trust" id="sellerBadge">trusted</span></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// REAL DATA ONLY — replays the actual on-chain demo runs from demo-state.json.
+// Every firehose hash is a real deploy on cspr.live; nothing is simulated.
+const $ = (id)=>document.getElementById(id);
+const short = (h)=>h.slice(0,8)+"…"+h.slice(-6);
+const EXP = (h)=>`https://testnet.cspr.live/deploy/${h}`;
+const now = ()=>new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+let DATA=null, busy=false;
+let rep = {buyer:{won:0,lost:0,vol:13000000}, seller:{won:0,lost:0,vol:13000000}};
+
+fetch("demo-state.json").then(r=>r.json()).then(d=>{ DATA=d;
+  $("dealId").textContent = short(d.honest.paymentId);
+  $("hint").innerHTML = 'Loaded the <b>real</b> on-chain demo runs. Press <b>Honest</b> or <b>Bad</b> to replay them — every hash links to the actual cspr.live deploy.';
+}).catch(()=>{ $("hint").textContent = "demo-state.json not found — run clawback-agent/src/demo.mjs to generate it."; });
+
+function setPills(active){ ["Held","Delivered","Disputed","Resolved"].forEach(s=>$("p"+s).classList.toggle("on", active.includes(s))); }
+function fill(pct){ $("fill").style.width=pct+"%"; }
+let rows=[];
+function pushRow(hash, status, label){
+  rows.unshift({hash, status, label, t:now()});
+  $("fhCount").textContent = rows.length+" tracked";
+  $("fireRows").innerHTML = rows.map(r=>`
+    <div class="row ${r.status}">
+      <div><div class="h"><a href="${EXP(r.hash)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${short(r.hash)} ↗</a></div><div class="sub">${r.label}</div></div>
+      <div><div class="s">${r.status}</div><div class="sub">${r.t}</div></div>
+      <div><div class="mono" style="font-size:12px">on-chain</div><div class="sub">cspr.live</div></div>
+    </div>`).join("");
+}
+function addEvent(name, msg, cls=""){
+  $("events").insertAdjacentHTML("afterbegin", `<div class="ev ${cls}"><div class="e">${name}</div><div>${msg}</div></div>`);
+}
+function setScores(){
+  const sc=(a)=>{const s=400+a.won*50+Math.floor(a.vol/1e6)-a.lost*125;return s<0?0:s;};
+  $("buyerScore").textContent=sc(rep.buyer); $("sellerScore").textContent=sc(rep.seller);
+  $("buyerVol").textContent=rep.buyer.vol; $("sellerVol").textContent=rep.seller.vol;
+}
+const wait=(ms)=>new Promise(r=>setTimeout(r,ms));
+
+async function run(mode){
+  if(busy) return; if(!DATA){ $("hint").textContent="demo-state.json not loaded yet."; return; }
+  busy=true; resetView();
+  const s=DATA[mode], D=s.deploys, amt=DATA.amount||1000000;
+  $("dealId").textContent=short(s.paymentId); $("respHash").textContent=short(s.responseHash||D.delivered);
+  $("statusBadge").textContent="held"; $("statusBadge").style.cssText="";
+  setPills(["Held"]); fill(0); pushRow(D.open,"held","escrow opened"); addEvent("chain.Opened","Casper confirmed held");
+  await wait(700);
+  setPills(["Held","Delivered"]); fill(50); pushRow(D.delivered,"held","delivery recorded"); addEvent("chain.Delivered","Casper confirmed delivered");
+  await wait(700);
+  if(mode==="honest"){
+    $("verdict").textContent=s.verdict; $("verdict").className="v ok";
+    addEvent("ai.Inspect",`Groq attester: ${s.verdict} (deliveredOk=true)`);
+    await wait(600);
+    setPills(["Held","Delivered","Resolved"]); fill(100); $("statusBadge").textContent="released";
+    pushRow(D.release,"released","escrow → seller"); addEvent("chain.Released","Casper confirmed released","rel");
+    rep.seller.won++; rep.buyer.won++; rep.seller.vol+=amt; rep.buyer.vol+=amt; setScores();
+    $("hint").innerHTML=`✅ Groq verdict <b>${s.verdict}</b>. Escrow released — seller earned ${s.sellerEarned.toLocaleString()} F402. <a href="${EXP(D.release)}" target="_blank" rel="noopener">release deploy ↗</a>`;
+  } else {
+    $("verdict").textContent=s.verdict; $("verdict").className="v refund";
+    addEvent("ai.Inspect",`Groq attester: ${s.verdict} (deliveredOk=false)`);
+    await wait(500);
+    setPills(["Held","Delivered","Disputed"]); fill(66); $("statusBadge").textContent="disputed";
+    $("statusBadge").style.cssText="color:#b91c1c;background:#fef2f2;border-color:#f3c9c9";
+    pushRow(D.dispute,"disputed","buyer disputed"); addEvent("chain.Disputed","Casper confirmed disputed","dis");
+    await wait(800);
+    addEvent("ai.Resolve",`AI verifier: ${s.verdictNotes||"refund buyer"}`);
+    await wait(500);
+    setPills(["Held","Delivered","Disputed","Resolved"]); fill(100); $("statusBadge").textContent="refunded";
+    $("statusBadge").style.cssText="color:#0f766e;background:#ecfdf5;border-color:#bbf7e6";
+    pushRow(D.resolve,"refunded","escrow → buyer (clawback)"); addEvent("chain.Resolved","Casper confirmed refunded","ref");
+    rep.seller.lost++; rep.buyer.won++; rep.seller.vol+=amt; rep.buyer.vol+=amt; setScores();
+    $("sellerBadge").textContent = (400+rep.seller.won*50-rep.seller.lost*125)>=450 ? "trusted" : "watch";
+    $("hint").innerHTML=`↩️ Groq verdict <b>${s.verdict}</b>. Buyer refunded ${s.buyerRefunded.toLocaleString()} F402 by the AI verifier. <a href="${EXP(D.resolve)}" target="_blank" rel="noopener">resolve deploy ↗</a>`;
+  }
+  busy=false;
+}
+function resetView(){
+  rows=[]; $("fireRows").innerHTML=""; $("events").innerHTML=""; $("fhCount").textContent="0 tracked";
+  $("verdict").textContent="pending"; $("verdict").className="v pend";
+  $("statusBadge").textContent="—"; $("statusBadge").style.cssText=""; setPills([]); fill(0);
+}
+function reset(){ rep={buyer:{won:0,lost:0,vol:13000000}, seller:{won:0,lost:0,vol:13000000}}; resetView(); setScores(); }
+reset();
+</script>
+</body>
+</html>

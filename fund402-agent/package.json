@@ -1,0 +1,25 @@
+{
+  "name": "fund402-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomous agent tools for Fund402 on Casper — wallets, funding, JIT borrow/repay, x402 payments",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "fund402-agent": "./src/cli.mjs"
+  },
+  "scripts": {
+    "tool": "node src/cli.mjs",
+    "tools": "node src/cli.mjs list",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.4.0",
+    "casper-js-sdk": "^5.0.12"
+  },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "clawback-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clawback MCP server — agent payment escrow + AI-adjudicated disputes on Casper, exposed to any MCP client",
+  "bin": { "clawback-mcp": "./src/server.mjs" },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node test/mcp-smoke.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "clawback-agent": "file:../clawback-agent"
+  },
+  "license": "MIT"
+}

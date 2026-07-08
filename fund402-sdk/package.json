@@ -1,0 +1,59 @@
+{
+  "name": "@nickthelegend69/fund402",
+  "version": "0.1.3",
+  "description": "Create x402-gated HTTP endpoints settled by the Fund402 lending pool on Casper — and the agent client that pays them with just-in-time credit. Drop-in middleware for Express, Hono and Next.js.",
+  "keywords": [
+    "x402",
+    "casper",
+    "payments",
+    "402",
+    "ai-agents",
+    "micropayments",
+    "lending",
+    "cep18",
+    "stablecoin",
+    "paywall"
+  ],
+  "license": "MIT",
+  "author": "nickthelegend",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickthelegend/fund402-sdk.git"
+  },
+  "homepage": "https://github.com/nickthelegend/fund402-casper",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./server": { "types": "./dist/server.d.ts", "default": "./dist/server.js" },
+    "./client": { "types": "./dist/client.d.ts", "default": "./dist/client.js" },
+    "./express": { "types": "./dist/adapters/express.d.ts", "default": "./dist/adapters/express.js" },
+    "./hono": { "types": "./dist/adapters/hono.d.ts", "default": "./dist/adapters/hono.js" },
+    "./next": { "types": "./dist/adapters/next.d.ts", "default": "./dist/adapters/next.js" }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node test/server.test.mjs && node test/eip712.test.mjs",
+    "test:e2e": "npm run build && node test/e2e-live.mjs",
+    "test:e2e:collateral": "npm run build && node test/e2e-collateral.mjs"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.4.0",
+    "casper-js-sdk": "^5.0.12"
+  },
+  "peerDependencies": {
+    "axios": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "axios": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

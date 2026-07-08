@@ -1,0 +1,21 @@
+{
+  "name": "fund402-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fund402 MCP server + Groq-driven TUI — drive the Casper JIT-credit agent in natural language",
+  "bin": {
+    "fund402-mcp": "./src/server.mjs",
+    "fund402-tui": "./src/tui.mjs"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "tui": "node src/tui.mjs",
+    "test": "node test/mcp-smoke.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "fund402-agent": "file:../fund402-agent"
+  },
+  "license": "Apache-2.0"
+}

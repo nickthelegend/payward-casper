@@ -1,0 +1,12 @@
+{
+  "name": "clawback-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clawback escrow dashboard — replays the real on-chain demo runs (no simulated data)",
+  "scripts": {
+    "start": "node serve.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.local
+*.pem
+*.secret
+.wallets/
+deals.json
+reputation.json
+*.log
+.DS_Store
+# rust build artifacts
+target/
+contracts/**/target/
+# keep the deployable wasm OUT of git (rebuild with cargo odra build)
+*.wasm
