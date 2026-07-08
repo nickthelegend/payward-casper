@@ -1,10 +1,14 @@
 // Clawback agent config + a stderr logger (stdout reserved for MCP).
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, isAbsolute } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(HERE, "..");
+
+// Anchor a relative configured path to the module root, never process.cwd() —
+// the MCP server is spawned by Claude Desktop from an arbitrary directory.
+const fromRoot = (p) => (p ? (isAbsolute(p) ? p : join(ROOT, p)) : undefined);
 
 // Minimal .env loader (no dependency).
 const envPath = join(ROOT, ".env");
@@ -29,9 +33,9 @@ export const CFG = {
   cep18Package: strip(process.env.CLAWBACK_CEP18_PACKAGE || "389cedc529cc553e2639884c9dcc5e6dcbeb3920f7f5ca5a39bf7f7b866bccd0"),
   cep18Name: process.env.CLAWBACK_CEP18_NAME || "Fund402 USDC",
   // Admin / liquidity / default verifier keys (the AI attester signs `resolve`).
-  treasuryPem: process.env.CLAWBACK_TREASURY_PEM || join(ROOT, "..", "..", "fund402", ".keys", "deployer_secret.pem"),
-  verifierPem: process.env.CLAWBACK_VERIFIER_PEM || join(ROOT, "..", "..", "fund402", ".keys", "deployer_secret.pem"),
-  walletsDir: process.env.CLAWBACK_WALLETS_DIR || join(ROOT, ".wallets"),
+  treasuryPem: fromRoot(process.env.CLAWBACK_TREASURY_PEM) || join(ROOT, "..", "..", "fund402", ".keys", "deployer_secret.pem"),
+  verifierPem: fromRoot(process.env.CLAWBACK_VERIFIER_PEM) || join(ROOT, "..", "..", "fund402", ".keys", "deployer_secret.pem"),
+  walletsDir: fromRoot(process.env.CLAWBACK_WALLETS_DIR) || join(ROOT, ".wallets"),
   groqKey: process.env.GROQ_API_KEY || "",
   groqModel: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
   // default dispute window (ms) — block_time is ms on Casper.
