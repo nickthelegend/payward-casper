@@ -1,0 +1,13 @@
+{
+  "_comment": "Add these to your Claude Desktop config to drive Fund402 (and Clawback) from chat. On macOS the real file is ~/Library/Application Support/Claude/claude_desktop_config.json — merge the mcpServers below into it, replace the absolute paths with yours, then fully quit (Cmd+Q) and reopen Claude Desktop. No secrets go here: each server reads its own .env module-relatively (fund402-mcp uses fund402-agent/.env; clawback-mcp uses clawback-agent/.env), so make sure those exist with CSPR_CLOUD_API_KEY + GROQ_API_KEY. Use an absolute node path (e.g. /opt/homebrew/bin/node) if `node` isn't on Claude Desktop's PATH.",
+  "mcpServers": {
+    "fund402": {
+      "command": "node",
+      "args": ["/absolute/path/to/fund402-mcp/src/server.mjs"]
+    },
+    "clawback": {
+      "command": "node",
+      "args": ["/absolute/path/to/clawback-casper/clawback-mcp/src/server.mjs"]
+    }
+  }
+}

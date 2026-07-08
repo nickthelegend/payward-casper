@@ -1,9 +1,17 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FLOW, type StepId, type DemoResult } from "@/lib/flow";
 import { CreditPipeline } from "@/components/CreditPipeline";
+import { ChatBox } from "@/components/ChatBox";
+
+interface AgentInfo {
+  publicKey?: string;
+  accountHash?: string | null;
+  cspr?: number | null;
+  f402?: number | null;
+}
 
 const MISSIONS = [
   { id: "btc", label: "Arbitrage bot", task: "Fetch BTC-USD spot to price a trade", q: "BTC-USD spot" },
@@ -18,7 +26,16 @@ export default function Demo() {
   const [activeStep, setActiveStep] = useState<StepId | null>(null);
   const [log, setLog] = useState<{ id: StepId; t: string }[]>([]);
   const [result, setResult] = useState<DemoResult | null>(null);
+  const [agent, setAgent] = useState<AgentInfo | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Load the REAL demo agent's identity + live balance (no placeholder).
+  useEffect(() => {
+    fetch("/api/agent-info")
+      .then((r) => r.json())
+      .then((d) => d?.configured && setAgent(d))
+      .catch(() => {});
+  }, []);
 
   const reset = () => {
     timers.current.forEach(clearTimeout);
@@ -97,9 +114,21 @@ export default function Demo() {
           <div className="text-xs uppercase tracking-wide text-zinc-500">The agent</div>
           <div className="mt-2 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-lg">◎</div>
-            <div>
-              <div className="font-mono text-sm text-zinc-200">agent-0x7f…a3</div>
-              <div className="font-mono text-xs text-zinc-500">CSPR.cloud · ed25519</div>
+            <div className="min-w-0">
+              {agent?.publicKey ? (
+                <a
+                  href={`https://testnet.cspr.live/account/${agent.publicKey}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block truncate font-mono text-sm text-zinc-200 hover:text-emerald-300 hover:underline"
+                  title={agent.publicKey}
+                >
+                  {agent.publicKey.slice(0, 10)}…{agent.publicKey.slice(-6)} ↗
+                </a>
+              ) : (
+                <div className="font-mono text-sm text-zinc-500">loading agent…</div>
+              )}
+              <div className="font-mono text-xs text-zinc-500">Casper · ed25519 · live on-chain</div>
             </div>
           </div>
           <div className="mt-4 flex items-baseline gap-2">
@@ -108,9 +137,9 @@ export default function Demo() {
               animate={{ opacity: [1, 0.55, 1] }}
               transition={{ duration: 1.6, repeat: Infinity }}
             >
-              0.00
+              {agent && agent.f402 != null ? agent.f402.toFixed(2) : "0.00"}
             </motion.span>
-            <span className="text-sm text-zinc-400">CSPR — can't pay</span>
+            <span className="text-sm text-zinc-400">F402 — can't pay the API</span>
           </div>
         </div>
 
@@ -246,6 +275,15 @@ export default function Demo() {
             </motion.div>
           )}
         </div>
+      </div>
+
+      {/* chat with the agent — natural language → real on-chain tools (Groq) */}
+      <div className="mt-8">
+        <div className="mb-2 flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">Talk to the agent</h2>
+          <span className="text-xs text-zinc-500">natural language · real tools · Casper testnet</span>
+        </div>
+        <ChatBox />
       </div>
 
       <footer className="mt-10 text-center text-xs text-zinc-500">
